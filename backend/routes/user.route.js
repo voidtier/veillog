@@ -22,11 +22,15 @@ router.post("/signup", async function (req, res) {
   try {
     // log this if you need
     // console.log(req.body);
-    const { email, username, password } = req.body;
+    const { firstname, lastname, email, username, password } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUSer = new user({
+      name: {
+        firstname: firstname,
+        lastname: lastname,
+      },
       email,
       username,
       password: hashedPassword,
@@ -80,6 +84,25 @@ router.post("/signin", async function (req, res) {
 router.get("/signin", function (req, res) {
   // console.log("hello");
   res.sendFile(path.join(frontendPath, "signin.html"));
+});
+
+router.get("/user", authentify, async function (req, res) {
+  const userId = req.user._id || req.user.id;
+  try {
+    const foundUser = await user.findById(userId);
+
+    if (!foundUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ username: foundUser.username });
+  } catch (error) {
+    console.log(`:${error}`);
+  }
+});
+
+router.get("/signout", function (req, res) {
+  res.clearCookie("token");
+  res.redirect("/signin");
 });
 
 module.exports = router;

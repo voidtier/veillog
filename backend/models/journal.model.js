@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-// const user = require("../models/user.model.js");
 
 const journalSchema = new mongoose.Schema(
   {

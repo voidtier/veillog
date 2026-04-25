@@ -1,14 +1,17 @@
 :root {
   --header-height: 65px;
+  --aside-width: 200px;
+  --aside-full-width: 160px;
+  --aside-hidden-width: 42px;
 
   --bg: #080808;
   --blured: rgba(0, 0, 0, 0.65);
   --accent: #a93226;
   --surface: #111111;
   --surface-muted: #0d0d0d;
-  --surface-hovered: #1a1a1a;
   --text: #f0f0f0;
-  --text-muted: #555555;
+  --text-muted: #999999;
+  --text-subtle: #555555;
   --border: rgba(255, 255, 255, 0.07);
   --button: #080808;
   --closeButton: #a93226;
@@ -19,20 +22,36 @@
   --note-accent: #c9843a;
   --journal-accent: #6b8f6b;
   --todo-accent: #4a7fa5;
+  --open-accent: #7b5ea7;
+  --surface-hovered: #1a1a1a;
   --border-hovered: rgba(255, 255, 255, 0.13);
   --button-hovered: #111111;
+  --progress-safe: var(--surface);
+  --progress-unsafe: var(--accent);
+  --svg-fill: #ffffff;
+  --downloadSpeed-color: #60a5fa;
+  --uploadSpeed-color: #4ade80;
+  --enourmous-font: 30px;
+  --huge-font: 24px;
+  --large-font: 18px;
+  --medium-font: 14px;
+  --small-font: 10px;
+
+  --occupied: green;
+  --unoccupied: red;
 }
 
 .light {
   --header-height: 65px;
 
   --bg: #f7f7f5;
-  --blured: rgba(0, 0, 0, 0.45);
+  --blured: rgba(255, 255, 255, 0.65);
   --accent: #2563eb;
   --surface: #ffffff;
   --surface-muted: #f0f0ee;
   --text: #111111;
   --text-muted: #aaaaaa;
+  --text-subtle: #cccccc;
   --border: rgba(0, 0, 0, 0.08);
   --button: #f7f7f5;
   --closeButton: #1a56db;
@@ -46,6 +65,7 @@
   --surface-hovered: #ebebea;
   --border-hovered: rgba(0, 0, 0, 0.15);
   --button-hovered: #ebebea;
+  --svg-fill: #000000;
 }
 
 * {
@@ -61,10 +81,15 @@ body {
   scroll-behavior: smooth;
 }
 
+svg {
+  fill: var(--text);
+}
+
 body {
   width: 100%;
   background: var(--bg);
-  color: var(--text);
+  color: var(--text-muted);
+  font-size: var(--small-font);
   font-family: sans-serif;
   transition:
     background 0.2s ease-in,
@@ -87,6 +112,8 @@ nav {
   width: 100%;
   height: 100%;
   display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 nav ul {
@@ -108,191 +135,237 @@ nav ul li a {
 }
 
 .home {
-  font-size: 1.5rem;
-  font-family: sans-serif;
+  font-size: var(--huge-font);
   color: var(--accent);
 }
 
-.theme {
+.avatarWrapper {
+  width: 32px;
+  height: 32px;
+  color: var(--text);
+  display: flex;
+  border-radius: 50%;
   cursor: pointer;
-  opacity: 0.75;
+  margin-right: 14px;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+  object-fit: cover;
+}
+
+.avatarModal {
+  margin: 0;
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+  border-radius: 6px;
+  box-shadow: var(--shadow), var(--shadow);
+  z-index: 1000;
   transition:
-    opacity 0.2s,
-    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity 0.3s ease-out,
+    transform 0.3s ease-out,
+    overlay 0.3s ease-out allow-discrete,
+    display 0.3s ease-out allow-discrete;
+  position: absolute;
+  opacity: 0;
+  transform: translateX(16px);
+}
+
+.avatarModal[open] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@starting-style {
+  .avatarModal[open] {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+.avatarModalWrapper {
+  width: max-content;
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  padding: 10px;
+}
+
+.avatarModalDirectChild {
+  display: flex;
+  column-gap: 4px;
+  align-items: center;
+}
+
+.accountName {
+  color: var(--text-muted);
+  font-size: var(--medium-font);
+}
+
+.sessionInfoSignal {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--occupied);
+  box-shadow: 0 0 10px var(--occupied);
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(0.85);
+  }
+}
+.sessionInfoText {
+  color: var(--text-subtle);
+  font-size: var(--medium-font);
+}
+
+.themeName,
+.logOutText {
+  color: var(--text-muted);
+  font-size: var(--medium-font);
 }
 
 .theme:hover {
-  opacity: 1;
   transform: rotate(25deg) scale(1.1);
+}
+
+.actionIcon {
+  opacity: 0.75;
+  transition: all 0.25s ease-in;
+}
+
+.actionIcon:hover {
+  opacity: 0.95;
+  cursor: pointer;
 }
 
 main {
   width: 100%;
-  display: grid;
-  grid-template-columns: auto 1fr;
+  /*display: grid;
+  grid-template-columns: auto 1fr;*/
 }
 
 aside {
-  width: 12vw;
-  height: calc(100vh - var(--header-height));
+  width: var(--aside-hidden-width);
+  min-height: 100vh;
   background: var(--surface);
-  position: sticky;
+  position: fixed;
   top: var(--header-height);
-  bottom: 0;
-  left: 0;
-  position: -webkit-sticky;
-  z-index: 200;
+  align-self: start;
   display: flex;
   flex-direction: column;
+  row-gap: 10px;
   border-right: 1px solid var(--border);
-  padding: 0 1rem;
-  overflow: hidden;
-  transition: all 0.25s ease-in-out;
+  padding: 12px;
+  overflow-y: auto;
+  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   text-wrap: nowrap;
-  --font: 0.85rem;
+  overflow-x: hidden;
+  white-space: nowrap;
+  z-index: 50;
 }
 
-.tabIcon {
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  opacity: 0.75;
-  cursor: pointer;
-  transition: all 0.25s ease-in-out;
+.hidden {
+  display: none;
 }
 
-.tabIcon:hover {
-  opacity: 1;
-  background: var(--button);
+aside.full {
+  width: var(--aside-full-width);
 }
 
-.mutedText {
-  color: var(--text-muted);
-  font-size: var(--font);
+aside.full ~ .contentPage {
+  margin-left: var(--aside-full-width);
 }
 
-.sideBarButton {
-  width: 100%;
+aside ~ .contentPage {
+  margin-left: var(--aside-hidden-width);
+}
+
+.sideBarTab {
   display: flex;
-  justify-content: end;
-  align-items: center;
-  border: none;
+  justify-content: flex-start;
+  align-items: flex-start;
+  column-gap: 12px;
 }
 
-.addEntry {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  column-gap: 1rem;
-  cursor: pointer;
-}
-
-aside > div {
-  border-bottom: 1px solid var(--border);
-  border-top: 1px solid var(--border);
-}
-
-.searchBar {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  column-gap: 1rem;
-  transition: background 0.25s ease-in-out;
-}
-
-.searchBar:focus-within {
-  background: var(--surface-muted);
+.hamberger {
+  flex-shrink: 0;
 }
 
 .search {
-  background: transparent;
-  color: var(--text);
-  border: none;
-  outline: none;
-}
-
-.search::placeholder {
-  font-size: var(--font);
-  color: var(--text-muted);
-}
-
-.dropDownToggler {
   width: 100%;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  column-gap: 0.75rem;
-}
-
-.dropDown {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: all 0.25s ease-in-out;
-}
-
-.dropDown ul {
-  display: flex;
-  flex-direction: column;
-  padding: 0 0 0 3rem;
-  row-gap: 0.25rem;
-  list-style-type: none;
-}
-
-.dropDown ul li {
-  color: var(--text-muted);
-  font-size: var(--font);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  opacity: 0.75;
-  transition: all 0.25s ease-in-out;
-}
-
-.dropDown ul li:hover {
-  background: var(--button);
   color: var(--text);
+  font-size: var(--medium-font);
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 2px 4px;
+  border-radius: 8px;
+  transition: all 0.25s ease-in;
 }
 
-.dropDown > * {
-  overflow: hidden;
+.search:focus {
+  border-color: var(--accent);
+  background: var(--button);
+}
+
+.dropDownButton {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  column-gap: 10px;
+}
+
+.sideBarTabText {
+  color: var(--text-subtle);
+  font-size: var(--medium-font);
+  transition: all 0.25s ease-in;
+}
+
+.sideBarTabText:hover {
+  color: var(--text-muted);
+}
+
+.sideBarTabText.opened {
+  color: var(--accent);
 }
 
 .dropDownIcon {
-  padding: 0.25rem;
-  border-radius: 0.5rem;
-  opacity: 0.5;
-  transition: all 0.25s ease-in-out;
-}
-
-.dropDownIcon:hover {
-  background: var(--button);
   opacity: 0.75;
 }
 
-.toggled {
-  grid-template-rows: 1fr;
+.dropDownIcon.rotate {
+  opacity: 0.95;
+  transform: rotate(-45deg);
 }
 
-.dropDownOpen {
-  transform: rotate(-180deg);
+.option {
+  padding: 2px 4px;
+  background: transparent;
+  border-radius: 4px;
+  transition: all 0.25s ease-in;
 }
-
-.hide {
-  width: 3.5vw;
-  overflow: hidden;
-  text-wrap: nowrap;
+.option:hover {
+  background: var(--button);
+  cursor: pointer;
 }
 
 .contentPage {
-  columns: 3;
-  column-gap: 2rem;
-  padding: 2.5rem;
-}
-
-.noteContainer,
-.journalContainer,
-.todoContainer {
-  break-inside: avoid;
-  margin-bottom: 2rem;
+  columns: 4;
+  column-gap: 20px;
+  padding: 12px;
+  transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 .emptyNoteAdd {
@@ -313,8 +386,8 @@ aside > div {
 }
 
 .warning p {
-  font-size: 2rem;
-  color: var(--text-muted);
+  font-size: var(--enourmous-font);
+  color: var(--text-subtle);
 }
 
 .headInput {
@@ -322,6 +395,7 @@ aside > div {
   background: transparent;
   padding: 0.5rem;
   color: var(--text);
+  font-size: var(--medium-font);
   border-radius: 1rem;
   border: 1px solid var(--border);
   transition: all 0.25s ease-in;
@@ -335,8 +409,8 @@ aside > div {
 
 .closeButton {
   background: var(--closeButton);
-  padding: 0.5rem 1rem;
-  color: var(--text);
+  padding: 8px 12px;
+  color: var(--text-muted);
   border-radius: 1rem;
   cursor: pointer;
   transition: all 0.25s ease-in;
@@ -344,8 +418,8 @@ aside > div {
 
 .saveButton {
   background: var(--saveButton);
-  padding: 0.5rem 1rem;
-  color: var(--text);
+  padding: 8px 12px;
+  color: var(--text-muted);
   border-radius: 1rem;
   cursor: pointer;
   transition: all 0.25s ease-in;
@@ -353,10 +427,12 @@ aside > div {
 
 .saveButton:hover {
   background: var(--button-hovered);
+  color: var(--text);
 }
 
 .closeButton:hover {
   background: var(--button-hovered);
+  color: var(--text);
 }
 
 .bluredBg {
@@ -364,7 +440,7 @@ aside > div {
   inset: 0;
   backdrop-filter: blur(4px);
   background: var(--blured);
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   z-index: 500;
@@ -391,7 +467,8 @@ aside > div {
 
 .typeSelectionHead {
   text-align: center;
-  font-size: 1.5rem;
+  color: var(--text-subtle);
+  font-size: var(--medium-font);
   font-family: sans-serif;
   border-bottom: 1px solid var(--border);
 }
@@ -406,12 +483,16 @@ aside > div {
 
 .typeSelectionWrapper > div {
   padding: 0.5rem 1rem;
+  font-size: var(--medium-font);
+  color: var(--text-subtle);
+
   border: 1px solid var(--border);
   border-radius: 0.5rem;
   transition: all 0.25s ease-in;
 }
 
 .typeSelectionWrapper > div:hover {
+  color: var(--text);
   background: var(--button-hovered);
   border-color: var(--border-hovered);
   cursor: pointer;
@@ -424,22 +505,79 @@ aside > div {
   opacity: 0.6;
 }
 
-.createdData {
-  font-family: sans-serif;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  padding: 0.5rem;
+.createdDateTime {
+  font-size: var(--small-font);
+  color: var(--text-subtle);
+  padding: 4px 8px;
 }
 
 .correction {
   display: flex;
   justify-content: center;
   align-items: flex-end;
+  position: relative;
+}
+
+.moreSVGWrapper {
+  position: relative;
+  width: 100%;
+  background: transparent;
+  display: flex;
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+.moreSVG {
+  cursor: pointer;
+  fill: var(--text-muted);
+  transition: all 0.25s ease;
+  display: block;
+}
+
+.moreSVG:hover {
+  fill: var(--text);
+}
+
+.moreModal {
+  position: fixed;
+  padding: 6px;
+  border-radius: 4px;
+  display: none;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  row-gap: 4px;
+  background: var(--surface-muted);
+  box-shadow: var(--shadow), var(--shadow);
+  z-index: 50;
+}
+
+.logEdit,
+.logDelete {
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: var(--small-font);
+  color: var(--text-subtle);
+  width: 100%;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.logEdit:hover {
+  background: var(--button-hovered);
+  color: var(--text);
+}
+
+.logDelete:hover {
+  background: var(--deleteToast);
+  color: var(--text);
 }
 
 .icon {
-  padding: 0.5rem;
-  border-radius: 0.5rem;
+  padding: 2px 4px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.25s ease-in-out;
   opacity: 0.5;
@@ -450,82 +588,271 @@ aside > div {
   opacity: 0.75;
 }
 
-.deleteToast {
+.deleteToast,
+.addToast {
   position: fixed;
-  bottom: 5rem;
-  right: 1rem;
+  bottom: 64px;
+  right: 12px;
   z-index: 1000;
   animation: toastAnimation 5s ease-in-out both;
   background: var(--blured);
   backdrop-filter: blur(4px);
+}
+
+.deleteToast p,
+.addToast p {
+  padding: 6px 12px;
+  color: var(--text-muted);
+  font-size: var(--medium-font);
 }
 
 .deleteToast p {
-  padding: 0.25rem 0.5rem;
-  border-left: 0.25rem solid var(--deleteToast);
-}
-
-.addToast {
-  position: fixed;
-  bottom: 2rem;
-  right: 1rem;
-  z-index: 1000;
-  animation: toastAnimation 5s ease-in-out both;
-  background: var(--blured);
-  backdrop-filter: blur(4px);
+  border-left: 4px solid var(--deleteToast);
 }
 
 .addToast p {
-  padding: 0.25rem 0.5rem;
-  border-left: 0.25rem solid var(--addToast);
+  border-left: 4px solid var(--addToast);
 }
 
 .activeShowUp {
   animation: showUp 0.3s ease-in;
 }
 
-/* =================================================The noteStyle ========================================================================================================= */
-.noteContainer {
-  width: 100%;
-  background-color: var(--surface);
-  border-radius: 1rem;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  overflow: clip;
-  border: 2px solid transparent;
-  border-top: 2px solid var(--note-accent);
-  transition: all 0.25s ease-in-out;
+.noteInputContainer,
+.journalInputContainer,
+.todoInputContainer,
+.openInputContainer {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(4px);
+  background: var(--blured);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 500;
+  animation: show 0.25s ease-in both;
 }
 
-.noteContainer:hover {
+.noteInputContainer > *,
+.journalInputContainer > *,
+.todoInputContainer > *,
+.openInputContainer > * {
+  position: relative;
+  z-index: 501;
+}
+
+.noteInputWrapper,
+.journalInputWrapper,
+.todoInputWrapper,
+.openInputWrapper {
+  width: 25%;
+  display: flex;
+  background: var(--surface-muted);
+  flex-direction: column;
+  row-gap: 20px;
+  border-radius: 10px;
+  padding: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: modalShow 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.noteHeadInput,
+.journalHeadInput,
+.todoHeadInput,
+.openHeadInput {
+  width: 100%;
+  background: transparent;
+  padding: 6px;
+  border-radius: 10px;
+  color: var(--text);
+  border: 1px solid var(--border);
+  transition: all 0.25s ease-in;
+}
+
+.noteTextInput,
+.journalTextInput {
+  width: 100%;
+  background: transparent;
+  color: var(--text);
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  min-height: 96px;
+  padding: 6px;
+  border-radius: 10px;
+  resize: vertical;
+  transition: all 0.25s ease-in;
+}
+
+.noteHeadInput::placeholder,
+.noteTextInput::placeholder,
+.journalHeadInput::placeholder,
+.journalTextInput::placeholder,
+.todoHeadInput::placeholder,
+.openHeadInput::placeholder {
+  color: var(--text-subtle);
+}
+
+.noteHeadInput:focus,
+.noteTextInput:focus,
+.journalHeadInput:focus,
+.journalTextInput:focus,
+.todoHeadInput:focus,
+.openHeadInput:focus {
+  border-color: var(--accent);
+}
+
+.noteContainer,
+.journalContainer,
+.todoContainer,
+.openContainer {
+  width: 100%;
+  background-color: var(--surface);
+  border-radius: 10px;
+  display: grid;
+  break-inside: avoid;
+  margin-bottom: 14px;
+  border: 1px solid transparent;
+  transition: all 0.25s ease-in-out;
+  grid-template-rows: 1fr auto;
+}
+
+.noteContainer {
+  border-top: 1px solid var(--note-accent);
+}
+.journalContainer {
+  border-top: 1px solid var(--journal-accent);
+}
+.todoContainer {
+  border-top: 1px solid var(--todo-accent);
+}
+.openContainer {
+  border-top: 1px solid var(--open-accent);
+}
+
+.noteContainer:hover,
+.journalContainer:hover,
+.todoContainer:hover,
+.openContainer:hover {
   box-shadow: var(--shadow);
   transform: translateY(-4px);
   border-color: var(--border-hovered);
 }
 
-.note {
+.note,
+.journal,
+.todo,
+.open {
   display: flex;
   flex-direction: column;
-  row-gap: 1rem;
-  padding: 1rem;
+  position: relative;
+}
+
+.noteTag,
+.journalTag,
+.todoTag,
+.openTag {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  display: flex;
+  column-gap: 2px;
+}
+
+.noteTagSVG,
+.journalTagSVG,
+.todoTagSVG,
+.openTagSVG {
+  width: var(--medium-font);
+  height: var(--medium-font);
+  fill: var(--text-subtle);
+}
+
+.noteTagSVG {
+  fill: var(--note-accent);
+}
+.journalTagSVG {
+  fill: var(--journal-accent);
+}
+.todoTagSVG {
+  fill: var(--todo-accent);
+}
+.openTagSVG {
+  fill: var(--open-accent);
+}
+
+.noteTagText,
+.journalTagText,
+.todoTagText,
+.openTagText {
+  color: var(--text-subtle);
+  font-size: var(--small-font);
+}
+
+.note {
+  row-gap: 4px;
+  padding: 10px;
+}
+
+.journal {
+  width: 100%;
+  padding: 10px;
+  line-height: 1;
+}
+
+.todo {
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  /*column-gap: 10px;*/
+  padding: 10px;
+  border-right: 1px solid var(--border);
+}
+
+.open {
+  row-gap: 4px;
+  padding: 10px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.noteHead,
+.journalHead,
+.todoHead,
+.openHead {
+  font-size: var(--large-font);
 }
 
 .noteHead {
   text-align: center;
-  font-size: 1.5rem;
-  font-family: sans-serif;
 }
 
-.notePara {
-  font-size: 1rem;
-  opacity: 0.9;
-  font-family: sans-serif;
+.journalHead {
+  margin-bottom: 10px;
+}
+
+.todoHead {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.openHead {
+  text-align: center;
+}
+
+.notePara,
+.journalPara {
+  font-size: var(--medium-font);
+  color: var(--text-muted);
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.6;
 }
 
-.noteLastSection {
+.noteLastSection,
+.journalLastSection,
+.openLastSection,
+.todoLastSection {
   width: 100%;
   background: var(--surface-muted);
   display: flex;
@@ -534,134 +861,20 @@ aside > div {
   border-top: 1px solid var(--border);
 }
 
-.noteTextInput {
-  width: 100%;
-  background: transparent;
-  color: var(--text);
-  box-sizing: border-box;
-  border: 0.1rem solid var(--border);
-  min-height: 10rem;
-  padding: 0.5rem;
-  resize: vertical;
-  border-radius: 1rem;
-  transition: all 0.25s ease-in;
-}
-
-.headInput::placeholder,
-.noteTextInput::placeholder {
-  color: var(--text-muted);
-}
-
-.headInput:focus,
-.noteTextInput:focus {
-  border-color: var(--accent);
-}
-
-.noteInputContainer {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(4px);
-  background: var(--blured);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 500;
-  animation: show 0.25s ease-in both;
-}
-
-.noteInputContainer > * {
-  position: relative;
-  z-index: 501;
-}
-
-.noteInputWrapper {
-  width: 25%;
-  display: flex;
-  background: var(--surface-muted);
-  flex-direction: column;
-  row-gap: 2rem;
-  border-radius: 1rem;
-  padding: 1rem;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  animation: modalShow 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
 .noteType {
   background: var(--note-accent);
 }
 
-/* ================ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ============= */
-
-/* ==============================================The journalStyle ========================================================================================================= */
-.journalInputContainer {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(4px);
-  background: var(--blured);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 500;
-  animation: show 0.25s ease-in both;
+.journalType {
+  background: var(--journal-accent);
 }
 
-.journalInputContainer > * {
-  position: relative;
-  z-index: 501;
+.todoType {
+  background: var(--todo-accent);
 }
 
-.journalInputWrapper {
-  width: 25%;
-  display: flex;
-  background: var(--surface-muted);
-  flex-direction: column;
-  row-gap: 2rem;
-  border-radius: 1rem;
-  padding: 1rem;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  animation: modalShow 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.journalTextInput {
-  width: 100%;
-  background: transparent;
-  color: var(--text);
-  box-sizing: border-box;
-  border: 0.1rem solid var(--border);
-  min-height: 10rem;
-  padding: 0.5rem;
-  resize: vertical;
-  border-radius: 1rem;
-  transition: all 0.25s ease-in;
-}
-
-.headInput::placeholder,
-.journalTextInput::placeholder {
-  color: var(--text-muted);
-}
-
-.headInput:focus,
-.journalTextInput:focus {
-  border-color: var(--accent);
-}
-
-.journalContainer {
-  background-color: var(--surface);
-  border-radius: 1rem;
-  display: grid;
-  grid-template-rows: 1fr auto;
-  overflow: clip;
-  border: 2px solid transparent;
-  border-top: 2px solid var(--journal-accent);
-  transition: all 0.25s ease-in-out;
-}
-
-.journalContainer:hover {
-  box-shadow: var(--shadow);
-  transform: translateY(-4px);
-  border-color: var(--border-hovered);
+.openType {
+  background: var(--open-accent);
 }
 
 .journalDateWrapper {
@@ -671,194 +884,52 @@ aside > div {
 }
 
 .journalDate {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-
-.journal {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  line-height: 1;
-}
-
-.journalHead {
-  font-size: 1.5rem;
-  font-family: sans-serif;
-  margin-bottom: 1rem;
-}
-
-.journalPara {
-  font-size: 1rem;
-  opacity: 0.9;
-  font-family: sans-serif;
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: 1.6;
-}
-
-.journalLastSection {
-  width: 100%;
-  background: var(--surface-muted);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  border-top: 1px solid var(--border);
-}
-
-.journalType {
-  background: var(--journal-accent);
-}
-
-/* ================ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ============= */
-
-/* =================================================The todoStyle ========================================================================================================= */
-
-.todoInputContainer {
-  position: fixed;
-  inset: 0;
-  backdrop-filter: blur(4px);
-  background: var(--blured);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 500;
-  animation: show 0.25s ease-in both;
-}
-
-.todoInputContainer > * {
-  position: relative;
-  z-index: 501;
-}
-
-.todoInputWrapper {
-  width: 25%;
-  display: flex;
-  background: var(--surface-muted);
-  flex-direction: column;
-  row-gap: 2rem;
-  border-radius: 1rem;
-  padding: 1rem;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  animation: modalShow 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.todoTextInput {
-  width: 100%;
-  background: transparent;
-  color: var(--text);
-  box-sizing: border-box;
-  border: 0.1rem solid var(--border);
-  min-height: 10rem;
-  padding: 0.5rem;
-  resize: vertical;
-  border-radius: 1rem;
-  transition: all 0.25s ease-in;
-}
-
-.todoTextInput::placeholder {
-  color: var(--text-muted);
-}
-
-.todoTextInput:focus {
-  border-color: var(--accent);
-}
-
-.todoContainer {
-  background-color: var(--surface);
-  border-radius: 1rem;
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  place-items: center;
-  overflow: clip;
-  border: 2px solid transparent;
-  border-top: 2px solid var(--todo-accent);
-  transition: all 0.25s ease-in-out;
-}
-
-.todoContainer:hover {
-  box-shadow: var(--shadow);
-  transform: translateY(-4px);
-  border-color: var(--border-hovered);
-}
-
-.todo {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  row-gap: 0.5rem;
-  padding: 0 0 0 1rem;
-  border-right: 1px solid var(--border);
-}
-
-.todoCreatedData {
-  font-family: sans-serif;
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  padding-top: 0.5rem;
-}
-
-.todoCorrection {
-  display: flex;
-  flex-direction: column;
-}
-
-.todoPara {
-  width: 100%;
-  font-size: 1rem;
-  opacity: 0.9;
-  font-family: sans-serif;
-  white-space: pre-wrap;
-  word-break: break-word;
+  font-size: var(--small-font);
+  color: var(--text-subtle);
+  margin-bottom: 2px;
+  margin-top: 12px;
 }
 
 .dueTime {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  padding: 1rem 0.5rem;
+  row-gap: 4px;
 }
 
 .dueTimeText {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  font-family: sans-serif;
+  width: max-content;
+  font-size: var(--small-font);
+  color: var(--text-subtle);
 }
 
 .todoTime {
-  font-family: sans-serif;
-  font-size: 0.85rem;
+  font-size: var(--small-font);
   color: var(--text-muted);
-  padding: 0.25rem 0;
 }
 
-.todoType {
-  background: var(--todo-accent);
-}
-
-.timepicker {
+.timePicker,
+.linkPicker {
   width: 100%;
   background: transparent;
   color: var(--text);
-  border: 0.1rem solid var(--border);
-  border-radius: 1rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.9rem;
-  font-family: sans-serif;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 8px;
+  font-size: var(--medium-font);
   cursor: pointer;
-  transition:
-    border-color 0.25s ease-in,
-    background 0.25s ease-in;
+  transition: all 0.25s ease-in;
 }
 
-.timepicker:focus {
+.timePicker::placeholder,
+.linkPicker::placeholder {
+  color: var(--text-subtle);
+  font-size: var(--medium-font);
+}
+
+.timePicker:focus,
+.linkPicker:focus {
   border-color: var(--accent);
 }
-
-/* ================ XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX ============= */
 
 @keyframes modalShow {
   from {
@@ -916,7 +987,7 @@ aside > div {
 
 @keyframes showUp {
   from {
-    transform: translateY(1rem);
+    transform: translateY(10px);
     opacity: 0;
   }
 
@@ -933,7 +1004,7 @@ aside > div {
   }
 
   to {
-    transform: translateY(1rem);
+    transform: translateY(10px);
     opacity: 0;
   }
 }

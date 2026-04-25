@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const todoSchema = new mongoose.Schema(
+const openSchema = new mongoose.Schema(
   {
     type: String,
     ownerId: {
@@ -9,13 +9,13 @@ const todoSchema = new mongoose.Schema(
       required: true,
     },
     heading: String,
+    openLink: String,
     date: String,
     time: String,
-    todoDueTime: String,
   },
   { timestamps: true },
 );
 
-const todo = mongoose.model("todo", todoSchema);
+const open = mongoose.model("open", openSchema);
 
-module.exports = todo;
+module.exports = open;

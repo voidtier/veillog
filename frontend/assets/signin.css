@@ -57,8 +57,8 @@ main {
 }
 
 .container {
-  width: clamp(20rem, 25vw, 40rem);
-  height: clamp(20rem, 50vh, 60rem);
+  max-width: 80%;
+  min-width: 25%;
   background-color: var(--surface);
   border-radius: 1rem;
   box-shadow: var(--shadow), var(--shadow);
@@ -66,13 +66,14 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 2rem 1rem;
 }
 
 .container form {
   width: 100%;
   display: flex;
-  justify-content: center;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
   gap: 1rem;
   padding: 2rem 0;

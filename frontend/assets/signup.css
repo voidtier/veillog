@@ -58,8 +58,8 @@ main {
 }
 
 .container {
-  width: clamp(20rem, 25vw, 40rem);
-  height: clamp(20rem, 50vh, 60rem);
+  max-width: 80%;
+  min-width: 25%;
   background-color: var(--surface);
   border-radius: 1rem;
   box-shadow: var(--shadow), var(--shadow);
@@ -67,6 +67,7 @@ main {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  padding: 2rem 1rem;
 }
 
 .container form {
@@ -77,6 +78,42 @@ main {
   align-items: center;
   gap: 1rem;
   padding: 2rem 0;
+}
+
+.container form input {
+  width: 100%;
+}
+
+.container form .name-dev {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1rem;
+}
+
+.container form .name-dev .firstname,
+.container form .name-dev .lastname {
+  padding: 0.6rem 0.4rem;
+  background-color: var(--surface-muted);
+  border: 0.125rem solid transparent;
+  border-radius: 2rem;
+  color: var(--text);
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease-out;
+}
+
+.container form .name-dev .firstname::placeholder,
+.container form .name-dev .lastname::placeholder {
+  color: var(--text-muted);
+}
+
+.container form .name-dev .firstname:focus,
+.container form .name-dev .lastname:focus {
+  border-bottom: 0.125rem solid var(--border);
+  background-color: transparent;
+  border-radius: 0;
+  color: var(--text);
+  font-size: 1rem;
 }
 
 .container form .username {

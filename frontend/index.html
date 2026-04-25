@@ -14,80 +14,151 @@
           <li class="">
             <a href="#home" class="home">VeilLog</a>
           </li>
-          <li>
-            <img src="svgs/darkMode.svg" class="theme" id="theme" alt="" />
-          </li>
         </ul>
+        <div class="avatarWrapper">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="32px"
+            viewBox="0 -960 960 960"
+            width="32px"
+            class="avatar"
+          >
+            <path
+              d="M237-285q54-38 115.5-56.5T480-360q66 0 127.5 18.5T723-285q35-41 52-91t17-104q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 54 17 104t52 91Zm141-165q-42-42-42-102t42-102q42-42 102-42t102 42q42 42 42 102t-42 102q-42 42-102 42t-102-42ZM480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q80 0 149.5 30t122 82.5Q804-699 834-629.5T864-480q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm100-88.5q48-16.5 90-48.5-43-27-91-41t-99-14q-51 0-99.5 13.5T290-233q42 32 90 48.5T480-168q52 0 100-16.5ZM531-501q21-21 21-51t-21-51q-21-21-51-21t-51 21q-21 21-21 51t21 51q21 21 51 21t51-21Zm-51-51Zm0 319Z"
+            />
+          </svg>
+        </div>
       </nav>
     </header>
 
     <main>
       <aside class="sideBar" id="sideBar">
-        <div class="sideBarButton" id="sideBarButton">
-          <img src="svgs/menuLight.svg" class="menu tabIcon" id="menu" alt="" />
-        </div>
-
-        <div class="addEntry" id="addEntry">
-          <img src="svgs/addLight.svg" alt="" class="addEntryImage tabIcon" />
-          <p class="mutedText">Do a entry</p>
-        </div>
-
-        <div class="searchBar">
-          <img
-            src="svgs/searchLight.svg"
-            id="searchbutton"
-            class="searchbutton tabIcon"
-            alt=""
-          />
-          <input
-            type="search"
-            name=""
-            id="search"
-            class="search"
-            placeholder="Search"
-          />
-        </div>
-
-        <div class="daySelect">
-          <div class="dropDownToggler">
-            <img
-              src="svgs/daySelectionLight.svg"
-              alt=""
-              class="daySelectImage tabIcon"
+        <div class="sideBarTab">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="20px"
+            viewBox="0 -960 960 960"
+            width="20px"
+            fill="#ffffff"
+            class="sideBarToggler hamberger"
+          >
+            <path
+              d="M648-324v-312L480-480l168 156ZM211-144q-27.64 0-47.32-19.68T144-211v-538q0-27.64 19.68-47.32T211-816h538q27.64 0 47.32 19.68T816-749v538q0 27.64-19.68 47.32T749-144H211Zm125-72v-528H216v528h120Zm72 0h336v-528H408v528Zm-72 0H216h120Z"
             />
-            <p class="mutedText">Timeline</p>
-            <img src="svgs/dropDownLight.svg" alt="" class="dropDownIcon" />
+          </svg>
+        </div>
+        <div class="addEntryWrapper sideBarTab">
+          <div class="addEntryIconWrapper">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="20px"
+              viewBox="0 -960 960 960"
+              width="20px"
+              fill="#ffffff"
+              class="addEntryIcon"
+            >
+              <path
+                d="M444-288h72v-156h156v-72H516v-156h-72v156H288v72h156v156Zm36.28 192Q401-96 331-126t-122.5-82.5Q156-261 126-330.96t-30-149.5Q96-560 126-629.5q30-69.5 82.5-122T330.96-834q69.96-30 149.5-30t149.04 30q69.5 30 122 82.5T834-629.28q30 69.73 30 149Q864-401 834-331t-82.5 122.5Q699-156 629.28-126q-69.73 30-149 30Zm-.28-72q130 0 221-91t91-221q0-130-91-221t-221-91q-130 0-221 91t-91 221q0 130 91 221t221 91Zm0-312Z"
+              />
+            </svg>
           </div>
-
-          <div class="daySelectGrid dropDown">
-            <ul>
-              <li class="">Alltime</li>
-              <li class="">Today</li>
-              <li class="">Yesterday</li>
-              <li class="">Over a week</li>
-              <li class="">Over a month</li>
-            </ul>
+          <div class="addEntryText sideBarTabText" id="addEntry">add</div>
+        </div>
+        <div class="searchWrapper sideBarTab">
+          <div class="searchButton">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="20px"
+              viewBox="0 -960 960 960"
+              width="20px"
+              fill="#ffffff"
+              class="sideBarIcon"
+            >
+              <path
+                d="M765-144 526-383q-30 22-65.79 34.5-35.79 12.5-76.18 12.5Q284-336 214-406t-70-170q0-100 70-170t170-70q100 0 170 70t70 170.03q0 40.39-12.5 76.18Q599-464 577-434l239 239-51 51ZM384-408q70 0 119-49t49-119q0-70-49-119t-119-49q-70 0-119 49t-49 119q0 70 49 119t119 49Z"
+              />
+            </svg>
+          </div>
+          <input class="search" type="search" name=" " />
+        </div>
+        <div class="categorySelect sideBarTab dropDown">
+          <div class="sideBarTabIcon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="20px"
+              viewBox="0 -960 960 960"
+              width="20px"
+              fill="#ffffff"
+              class="sideBarIcon"
+            >
+              <path
+                d="M384-264v-72h192v72H384ZM240-444v-72h480v72H240Zm-96-180v-72h672v72H144Z"
+              />
+            </svg>
+          </div>
+          <div class="dropDownWrapper">
+            <div class="dropDownButton" aria-expanded="false">
+              <p class="dropDownText sideBarTabText dropIt">Category</p>
+              <div class="dropDownIconWrapper dropIt">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="20px"
+                  viewBox="0 -960 960 960"
+                  width="20px"
+                  fill="#ffffff"
+                  class="dropDownIcon"
+                >
+                  <path d="M480-384 288-576h384L480-384Z" />
+                </svg>
+              </div>
+            </div>
+            <div class="dropDownMenu hidden">
+              <p class="option typeSelection">All</p>
+              <p class="option typeSelection">Note</p>
+              <p class="option typeSelection">Todo</p>
+              <p class="option typeSelection">Journal</p>
+              <p class="option typeSelection">Open</p>
+            </div>
           </div>
         </div>
-
-        <div class="categorySelect">
-          <div class="dropDownToggler">
-            <img
-              src="svgs/typeLight.svg"
-              alt=""
-              class="typeSelectImage tabIcon"
-            />
-            <p class="mutedText">Category</p>
-            <img src="svgs/dropDownLight.svg" alt="" class="dropDownIcon" />
+        <div class="daySelect sideBarTab dropDown">
+          <div class="sideBarTabIcon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="20px"
+              viewBox="0 -960 960 960"
+              width="20px"
+              fill="#ffffff"
+              class="sideBarIcon"
+            >
+              <path
+                d="M216-96q-29.7 0-50.85-21.5Q144-139 144-168v-528q0-29 21.15-50.5T216-768h72v-96h72v96h240v-96h72v96h72q29.7 0 50.85 21.5Q816-725 816-696v528q0 29-21.15 50.5T744-96H216Zm0-72h528v-360H216v360Zm0-432h528v-96H216v96Zm0 0v-96 96Z"
+              />
+            </svg>
           </div>
-
-          <div class="categorySelectGrid dropDown">
-            <ul>
-              <li class="typeSelection allType">All</li>
-              <li class="typeSelection noteType">Note</li>
-              <li class="typeSelection todoType">Todo</li>
-              <li class="typeSelection journalType">Journal</li>
-            </ul>
+          <div class="dropDownWrapper">
+            <div class="dropDownButton" aria-expanded="false">
+              <p class="dropDownText sideBarTabText dropIt">Timeline</p>
+              <div class="dropDownIconWrapper dropIt">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  height="20px"
+                  viewBox="0 -960 960 960"
+                  width="20px"
+                  fill="#ffffff"
+                  class="dropDownIcon"
+                >
+                  <path d="M480-384 288-576h384L480-384Z" />
+                </svg>
+              </div>
+            </div>
+            <div class="dropDownMenu hidden">
+              <p class="option daySelection">Alltime</p>
+              <p class="option daySelection">Today</p>
+              <p class="option daySelection">Yesterday</p>
+              <p class="option daySelection">Over a week</p>
+              <p class="option daySelection">Over a month</p>
+            </div>
           </div>
         </div>
       </aside>
@@ -106,6 +177,59 @@
       </section>
     </main>
 
+    <div class="bluredBg">
+      <div class="typeSelectionContainer">
+        <p class="typeSelectionHead">Select what you wanna do</p>
+        <div class="typeSelectionWrapper">
+          <div class="typeChoice noteType">Note</div>
+          <div class="typeChoice journalType">Journal</div>
+          <div class="typeChoice todoType">Todo</div>
+          <div class="typeChoice openType">Open</div>
+        </div>
+      </div>
+    </div>
+    <dialog class="avatarModal">
+      <div class="avatarModalWrapper">
+        <p class="accountName avatarModalDirectChild">Khabir</p>
+
+        <div class="sessionInfo avatarModalDirectChild">
+          <p class="sessionInfoSignal"></p>
+
+          <p class="sessionInfoText">Logged in</p>
+        </div>
+
+        <div class="themeToggler avatarModalDirectChild">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="20px"
+            viewBox="0 -960 960 960"
+            width="20px"
+            class="theme actionIcon avatarModalButton"
+          >
+            <path
+              d="M479.96-144Q340-144 242-242t-98-238q0-140 97.93-238t237.83-98q13.06 0 25.65 1 12.59 1 25.59 3-39 29-62 72t-23 92q0 85 58.5 143.5T648-446q49 0 92-23t72-62q2 13 3 25.59t1 25.65q0 139.9-98.04 237.83t-238 97.93Zm.04-72q82 0 148.78-47.07Q695.55-310.15 727-386q-20 5-39.67 8.5Q667.67-374 648-374q-113.86 0-193.93-80.07Q374-534.14 374-648q0-19.67 3.5-39.33Q381-707 386-727q-75.85 31.45-122.93 98.22Q216-562 216-480q0 110 77 187t187 77Zm-14-250Z"
+            />
+          </svg>
+
+          <p class="themeName avatarModalTextButton">Dark</p>
+        </div>
+
+        <div class="sessionActivity avatarModalDirectChild">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="20px"
+            viewBox="0 -960 960 960"
+            width="20px"
+            class="logOutIcon actionIcon logMeOut avatarModalButton"
+          >
+            <path
+              d="M216-144q-29.7 0-50.85-21.15Q144-186.3 144-216v-528q0-29.7 21.15-50.85Q186.3-816 216-816h264v72H216v528h264v72H216Zm432-168-51-51 81-81H384v-72h294l-81-81 51-51 168 168-168 168Z"
+            />
+          </svg>
+          <p class="logOutText avatarModalTextButton">Log out</p>
+        </div>
+      </div>
+    </dialog>
     <script src="index.js"></script>
   </body>
 </html>

@@ -1,40 +1,43 @@
 appFunction();
+avatarModalSetup();
 
 function appFunction() {
   let localDataArray = [];
+  function warningSign(array) {
+    if (!array) {
+      return;
+    }
+    const warning = document.querySelector("#warning");
+    if (array.length > 0) {
+      if (warning) warning.style.display = "none";
+    } else if (array.length === 0) {
+      if (warning) warning.style.display = "flex";
+    }
+  }
+
+  warningSign(localDataArray);
 
   async function fetchDataFromDB() {
     try {
-      const dataResponseJson = await fetch("/api/entries");
+      const dataResponseJson = await fetch("/api/veillog/entries");
 
-      const dataResponse = await dataResponseJson.json();
-      // console.log(
-      //   typeof dataResponse,
-      //   Array.isArray(dataResponse),
-      //   dataResponse,
-      // );
       if (!dataResponseJson.ok) {
         throw new Error();
-      } else {
-        localDataArray = dataResponse;
-        getData(localDataArray);
       }
-      // console.log(localDataArray);
+      const dataResponse = await dataResponseJson.json();
+      localDataArray = dataResponse;
+      getData(localDataArray);
     } catch (error) {
       console.log(`error while fetching entries route : ${error}`);
     }
   }
 
-  if (localDataArray.length > 0) {
-    const warning = document.querySelector("#warning");
-    if (warning) warning.style.display = "none";
-  }
-
-  themeChanger();
-  toggles();
+  fetchDataFromDB();
+  searchFeature();
+  // themeChanger();
+  toggling();
   daySelection();
   typeSelectionFunction();
-  fetchDataFromDB();
   noteCreation();
 
   function noteCreation() {
@@ -45,59 +48,19 @@ function appFunction() {
     emptyNoteAdd.addEventListener("click", typeSelection);
 
     function typeSelection() {
-      const bluredBg = document.createElement("div");
-      bluredBg.setAttribute("class", "bluredBg");
-      const typeSelectionContainer = document.createElement("div");
-      typeSelectionContainer.setAttribute("class", "typeSelectionContainer");
-      const typeSelectionHead = document.createElement("p");
-      typeSelectionHead.setAttribute("class", "typeSelectionHead");
-      typeSelectionHead.textContent = "Select what you wanna do";
-      const typeSelectionWrapper = document.createElement("div");
-      typeSelectionWrapper.setAttribute("class", "typeSelectionWrapper");
-      const noteType = document.createElement("div");
-      noteType.setAttribute("class", "noteType  typeChoice");
-      noteType.textContent = "Note";
-      const journalType = document.createElement("div");
-      journalType.setAttribute("class", "journalType  typeChoice");
-      journalType.textContent = "Journal";
-      const todoType = document.createElement("div");
-      todoType.setAttribute("class", "todoType  typeChoice");
-      todoType.textContent = "Todo";
-
-      typeSelectionWrapper.append(noteType);
-      typeSelectionWrapper.append(journalType);
-      typeSelectionWrapper.append(todoType);
-      typeSelectionContainer.append(typeSelectionHead);
-      typeSelectionContainer.append(typeSelectionWrapper);
-      bluredBg.append(typeSelectionContainer);
+      const bluredBg = document.querySelector(".bluredBg");
+      bluredBg.style.display = "flex";
       document.body.append(bluredBg);
-
       document.querySelectorAll(".typeChoice").forEach((button) => {
         button.addEventListener("click", () => {
-          switch (button.textContent.trim().toLowerCase()) {
-            case "note":
-              formShow(true, "note");
-
-              break;
-            case "journal":
-              formShow(true, "journal");
-
-              break;
-            case "todo":
-              formShow(false, "todo");
-              break;
-
-            default:
-              formShow(true, "note");
-              break;
-          }
-
-          bluredBg.remove();
+          const selectedType = button.textContent.toLowerCase().trim();
+          formShow(selectedType);
+          bluredBg.style.display = "none";
         });
       });
     }
 
-    function formShow(value, type) {
+    function formShow(type) {
       if (document.querySelector(`.${type}InputContainer`)) {
         return;
       }
@@ -107,10 +70,6 @@ function appFunction() {
 
       const wrapper = document.createElement("div");
       wrapper.setAttribute("class", `${type}InputWrapper`);
-
-      const textInput = document.createElement("textarea");
-      textInput.setAttribute("class", `${type}TextInput`);
-      textInput.placeholder = `Your ${type} context`;
 
       const logButtons = document.createElement("div");
       logButtons.setAttribute("class", "logButtons");
@@ -124,20 +83,34 @@ function appFunction() {
       closeButton.setAttribute("class", "closeButton");
 
       const headInput = document.createElement("input");
-      headInput.setAttribute("class", "headInput");
+      headInput.className = `${type}HeadInput`;
       headInput.placeholder = `Write your ${type} heading`;
 
-      let timepicker;
-      if (value === false) {
-        headInput.style.display = "none";
-        timepicker = document.createElement("input");
-        timepicker.setAttribute("type", "time");
-        timepicker.setAttribute("class", "timepicker");
-        wrapper.append(timepicker);
+      wrapper.append(headInput);
+
+      let timePicker, linkPicker, textInput;
+      if (type === "todo") {
+        timePicker = document.createElement("input");
+        timePicker.setAttribute("type", "time");
+        timePicker.className = "timePicker";
+        wrapper.append(timePicker);
       }
 
-      wrapper.append(headInput);
-      wrapper.append(textInput);
+      if (type === "open") {
+        linkPicker = document.createElement("input");
+        linkPicker.setAttribute("type", "url");
+        linkPicker.placeholder = `Your ${type} Link`;
+        linkPicker.className = `linkPicker`;
+        wrapper.append(linkPicker);
+      }
+
+      if (type !== "todo" && type !== "open") {
+        textInput = document.createElement("textarea");
+        textInput.className = `${type}TextInput`;
+        textInput.placeholder = `Your ${type} context`;
+        wrapper.append(textInput);
+      }
+
       logButtons.append(closeButton);
       logButtons.append(saveButton);
       wrapper.append(logButtons);
@@ -149,16 +122,38 @@ function appFunction() {
         container.remove();
       });
 
-      saveButton.addEventListener("click", (e) => {
+      saveButton.addEventListener("click", async (e) => {
         e.preventDefault();
 
-        const text = textInput.value.trim();
-        let headingText;
-        let pickedTime;
-        if (value === true) {
-          headingText = headInput.value.trim();
-        } else {
-          pickedTime = timepicker.value;
+        const heading = headInput.value.trim();
+        let text, todoTime, openLink;
+
+        if (type === "todo") {
+          todoTime = timePicker.value;
+          if (todoTime === "" || heading === "") {
+            return toastFunction(
+              "You need to input both field 🙂",
+              "deleteToast",
+            );
+          }
+        }
+        if (type === "open") {
+          openLink = linkPicker.value;
+          if (openLink === "" || heading === "") {
+            return toastFunction(
+              "You need to input both field 🙂",
+              "deleteToast",
+            );
+          }
+        }
+        if (type !== "todo" && type !== "open") {
+          text = textInput.value.trim();
+          if (text === "" || heading === "") {
+            return toastFunction(
+              "You need to input both field 🙂",
+              "deleteToast",
+            );
+          }
         }
 
         const timeDateDigit = new Date();
@@ -174,139 +169,108 @@ function appFunction() {
           weekday: "long",
         });
 
-        let todoTime = pickedTime || timeDateDigit.toLocaleTimeString();
-
-        if (type === "todo" && text === "") {
-          return toastFunction("You need to put a task 🙂", "deleteToast");
-        }
-
-        if (type !== "todo") {
-          if (text === "" || headingText === "") {
-            return toastFunction("You need to fill both 🙂", "deleteToast");
-          }
-        }
-
         const obj = {
-          heading: headingText,
-          text: text,
-          type: type,
+          heading,
+          text,
+          type,
           date: dateDigit,
           time: timeDigit,
           dateNumber: numberedDate,
           month: monthText,
           day: dayText,
-          todoDueTime: todoTime,
+          todoTime,
+          openLink,
         };
 
-        async function setTypeDataToDB() {
-          try {
-            const response = await fetch(`/api/${type}s`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(obj),
-            });
+        try {
+          const response = await fetch(`/api/veillog/${type}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(obj),
+          });
 
-            const saved = await response.json();
-            obj._id = saved._id;
-            localDataArray.push(obj);
-          } catch (error) {
-            console.log(`error while seting data to db : ${error}`);
-          }
+          const saved = await response.json();
+          obj._id = saved._id;
+          localDataArray.push(obj);
+        } catch (error) {
+          console.log(`error while seting data to db : ${error}`);
         }
 
-        setTypeDataToDB();
-
-        switch (obj.type) {
-          case "note":
-            renderUI(obj, false);
-            break;
-          case "journal":
-            renderUI(obj, false);
-            break;
-          case "todo":
-            renderUI(obj, true);
-            break;
-        }
+        renderUI(obj);
         toastFunction(`${obj.type} is added`, "addToast");
-
-        textInput.value = "";
-        headInput.value = "";
-
         container.remove();
       });
     }
   }
 
   function getData(localDataArray) {
-    localDataArray.forEach((element, index) => {
-      switch (element.type) {
-        case "note":
-          renderUI(element, false);
-          break;
-        case "journal":
-          renderUI(element, false);
-          break;
-        case "todo":
-          renderUI(element, true);
-          break;
-      }
+    localDataArray.forEach((element) => {
+      renderUI(element);
     });
   }
 
-  function renderUI(dataObject, value) {
+  function renderUI(dataObject) {
     const contentPage = document.querySelector("#contentPage");
-    const warning = document.querySelector("#warning");
-    if (warning) {
-      warning.style.display = "none";
-    }
-
-    const theType = dataObject.type;
+    warningSign(localDataArray);
+    const type = dataObject.type;
 
     const logContainer = document.createElement("div");
-    logContainer.setAttribute("class", `${theType}Container`);
+    logContainer.className = `${type}Container`;
     logContainer.classList.add("activeShowUp");
 
-    let editImageSrc;
-    let deleteImageSrc;
-
-    if (document.body.classList.contains("dark")) {
-      editImageSrc = "svgs/editLight.svg";
-      deleteImageSrc = "svgs/deleteLight.svg";
+    let log;
+    if (type === "open") {
+      log = document.createElement("a");
+      log.href = dataObject.openLink;
+      log.target = "_blank";
     } else {
-      editImageSrc = "svgs/editDark.svg";
-      deleteImageSrc = "svgs/deleteDark.svg";
+      log = document.createElement("div");
     }
 
-    const log = document.createElement("div");
-    log.setAttribute("class", `${theType}`);
+    log.className = type;
 
-    const logHead = document.createElement("h3");
-    logHead.setAttribute("class", `${theType}Head`);
+    const logTag = document.createElement("div");
+    logTag.className = `${type}Tag`;
+    const logTagText = document.createElement("p");
+    logTagText.className = `${type}TagText`;
+    logTagText.textContent = `${type}`;
 
-    const logPara = document.createElement("p");
-    logPara.setAttribute("class", `${theType}Para`);
+    let logTagSVGPath;
 
-    const div_iderLine = document.createElement("span");
-    div_iderLine.setAttribute("class", "div_iderLine");
+    if (type === "todo") {
+      logTagSVGPath =
+        "M480-96q-79 0-149-30t-122.5-82.5Q156-261 126-331T96-480q0-80 30-149.5t82.5-122Q261-804 331-834t149-30q63 0 120 19t105 54l-52 52q-37-26-81-39.5T480-792q-130 0-221 91t-91 221q0 130 91 221t221 91q130 0 221-91t91-221q0-21-3-41.5t-8-40.5l57-57q13 32 19.5 67t6.5 72q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm-55-211L264-468l52-52 110 110 387-387 51 51-439 439Z";
+    }
+    if (type === "open") {
+      logTagSVGPath =
+        "M432-288H288q-79.68 0-135.84-56.23Q96-400.45 96-480.23 96-560 152.16-616q56.16-56 135.84-56h144v72H288q-50 0-85 35t-35 85q0 50 35 85t85 35h144v72Zm-96-156v-72h288v72H336Zm192 156v-72h144q50 0 85-35t35-85q0-50-35-85t-85-35H528v-72h144q79.68 0 135.84 56.23 56.16 56.22 56.16 136Q864-400 807.84-344 751.68-288 672-288H528Z";
+    }
+    if (type === "note") {
+      logTagSVGPath =
+        "M144-264v-72h432v72H144Zm0-180v-72h672v72H144Zm0-180v-72h672v72H144Z";
+    }
+    if (type === "journal") {
+      logTagSVGPath =
+        "M216-144q-29.7 0-50.85-21.15Q144-186.3 144-216v-528q0-29.7 21.15-50.85Q186.3-816 216-816h408l192 192v408q0 29.7-21.15 50.85Q773.7-144 744-144H216Zm0-72h528v-360H576v-168H216v528Zm72-72h384v-72H288v72Zm12-300h180v-72H300v72Zm-12 168h384v-72H288v72Zm-72-324v156-156 528-528Z";
+    }
+
+    const logTagSVGBox = "0 -960 960 960";
+
+    const logTagSVG = createSVG(logTagSVGPath, 16, logTagSVGBox);
+    logTagSVG.setAttribute("class", `${type}TagSVG`);
+
+    logTag.append(logTagSVG, logTagText);
+    log.append(logTag);
+
+    const logHead = document.createElement("p");
+    logHead.className = `${type}Head`;
 
     const logLastSection = document.createElement("div");
-    logLastSection.setAttribute("class", `${theType}LastSection`);
+    logLastSection.className = `${type}LastSection`;
 
-    let todoCreatedData;
-    let todoCorrection;
+    let journalDateWrapper, journalDate, logPara;
 
-    let journalDateWrapper;
-    let journalDate;
-
-    if (theType === "todo") {
-      todoCreatedData = document.createElement("div");
-      todoCreatedData.setAttribute("class", `${theType}CreatedData`);
-
-      todoCorrection = document.createElement("div");
-      todoCorrection.setAttribute("class", `${theType}Correction`);
-    }
-
-    if (theType === "journal") {
+    if (type === "journal") {
       journalDateWrapper = document.createElement("div");
       journalDateWrapper.setAttribute("class", "journalDateWrapper");
 
@@ -314,6 +278,8 @@ function appFunction() {
       journalDate.setAttribute("class", "journalDate");
 
       journalDate.textContent = `${dataObject.date} ,${dataObject.month} ${dataObject.dateNumber}`;
+      journalDateWrapper.append(journalDate);
+      log.append(journalDateWrapper);
     }
 
     const createdData = document.createElement("div");
@@ -325,63 +291,92 @@ function appFunction() {
     const createdDateTime = document.createElement("p");
     createdDateTime.setAttribute("class", "createdDateTime");
 
-    const logEditImage = document.createElement("img");
-    logEditImage.setAttribute("class", `${theType}EditImage icon`);
+    const logEdit = document.createElement("p");
+    logEdit.className = "logEdit";
+    logEdit.textContent = "edit";
 
-    const logDeleteImage = document.createElement("img");
-    logDeleteImage.setAttribute("class", `${theType}DeleteImage icon`);
+    const logDelete = document.createElement("p");
+    logDelete.className = "logDelete";
+    logDelete.textContent = "delete";
 
+    const moreModal = document.createElement("div");
+    moreModal.className = `moreModal`;
+    moreModal.append(logEdit, logDelete);
+
+    const moreSVGPath =
+      "M240-400q-33 0-56.5-23.5T160-480q0-33 23.5-56.5T240-560q33 0 56.5 23.5T320-480q0 33-23.5 56.5T240-400Zm240 0q-33 0-56.5-23.5T400-480q0-33 23.5-56.5T480-560q33 0 56.5 23.5T560-480q0 33-23.5 56.5T480-400Zm240 0q-33 0-56.5-23.5T640-480q0-33 23.5-56.5T720-560q33 0 56.5 23.5T800-480q0 33-23.5 56.5T720-400Z";
+
+    const moreSVGBox = "0 -960 960 960";
+
+    const moreSVG = createSVG(moreSVGPath, 16, moreSVGBox);
+    moreSVG.setAttribute("class", "moreSVG");
+    const moreSVGWrapper = document.createElement("div");
+    moreSVGWrapper.className = `moreSVGWrapper`;
+    moreSVGWrapper.append(moreSVG);
+    document.body.appendChild(moreModal);
+
+    moreSVG.addEventListener("click", function (e) {
+      e.stopPropagation();
+      const isOpened = moreModal.style.display === "flex";
+      document
+        .querySelectorAll(".moreModal")
+        .forEach((m) => (m.style.display = "none"));
+
+      if (isOpened) {
+        moreModal.style.display = "none";
+      } else {
+        moreModal.style.display = "flex";
+
+        const positioning = moreSVG.getBoundingClientRect();
+        moreModal.style.top = `${positioning.bottom + 4}px`;
+        moreModal.style.left = `${positioning.left - 48}px`;
+      }
+    });
+
+    document.addEventListener("click", function (e) {
+      if (!moreModal.contains(e.target) && !moreSVG.contains(e.target)) {
+        moreModal.style.display = "none";
+      }
+    });
     createdDateTime.textContent = `${dataObject.date} | ${dataObject.time}`;
     logHead.textContent = dataObject.heading;
-    logPara.textContent = dataObject.text;
-
-    logEditImage.src = editImageSrc;
-    logDeleteImage.src = deleteImageSrc;
-
-    if (theType === "journal") {
-      journalDateWrapper.append(journalDate);
-      log.append(journalDateWrapper);
-    }
 
     log.append(logHead);
-    if (theType !== "todo" && theType !== "journal") {
-      log.append(div_iderLine);
+    if (type === "note") {
+      const dividerLine = document.createElement("span");
+      dividerLine.className = "dividerLine";
+      log.append(dividerLine);
     }
 
-    log.append(logPara);
-
-    if (theType !== "todo") {
-      createdData.append(createdDateTime);
-      logLastSection.append(createdData);
-      logLastSection.append(correction);
-      correction.append(logEditImage);
-      correction.append(logDeleteImage);
-    } else {
-      todoCreatedData.append(createdDateTime);
-      log.append(todoCreatedData);
-      logLastSection.append(todoCorrection);
-      todoCorrection.append(logEditImage);
-      todoCorrection.append(logDeleteImage);
+    if (type !== "todo" && type !== "open") {
+      logPara = document.createElement("p");
+      logPara.setAttribute("class", `${type}Para`);
+      logPara.textContent = dataObject.text;
+      log.append(logPara);
     }
 
+    createdData.append(createdDateTime);
+    logLastSection.append(createdData);
+    logLastSection.append(correction);
+    correction.append(moreSVGWrapper);
     logContainer.append(log);
 
-    if (value === true) {
+    if (type === "todo") {
       const dueTime = document.createElement("div");
-      dueTime.setAttribute("class", "dueTime");
+      dueTime.className = "dueTime";
 
       const dueTimeText = document.createElement("p");
-      dueTimeText.setAttribute("class", "dueTimeText");
+      dueTimeText.className = "dueTimeText";
 
       const todoTime = document.createElement("p");
-      todoTime.setAttribute("class", "todoTime");
+      todoTime.className = "todoTime";
 
-      todoTime.textContent = dataObject.todoDueTime;
+      todoTime.textContent = dataObject.todoTime;
       dueTimeText.textContent = `Todo is due to`;
 
       dueTime.append(dueTimeText);
       dueTime.append(todoTime);
-      logContainer.append(dueTime);
+      log.append(dueTime);
     }
 
     logContainer.append(logLastSection);
@@ -390,11 +385,14 @@ function appFunction() {
     fragment.append(logContainer);
     contentPage.appendChild(fragment);
 
-    logDeleteImage.addEventListener("click", async function () {
+    logDelete.addEventListener("click", async function () {
       try {
-        const isDeleted = await fetch(`/api/${theType}s/${dataObject._id}`, {
-          method: "DELETE",
-        });
+        const isDeleted = await fetch(
+          `/api/veillog/${type}/${dataObject._id}`,
+          {
+            method: "DELETE",
+          },
+        );
 
         if (!isDeleted.ok) {
           throw new Error();
@@ -403,7 +401,7 @@ function appFunction() {
           return el._id !== dataObject._id;
         });
 
-        toastFunction(`${theType} is deleted`, "deleteToast");
+        toastFunction(`${type} is deleted`, "deleteToast");
 
         if (localDataArray.length === 0) {
           const warning = document.querySelector("#warning");
@@ -415,27 +413,30 @@ function appFunction() {
       }
     });
 
-    logEditImage.onclick = logEditAndSave;
+    logEdit.onclick = logEditAndSave;
     function logEditAndSave() {
-      if (document.querySelector(`.${theType}InputContainer`)) {
+      if (document.querySelector(`.${type}InputContainer`)) {
         return;
       }
 
       const container = document.createElement("div");
-      container.setAttribute("class", `${theType}InputContainer`);
+      container.setAttribute("class", `${type}InputContainer`);
 
       const wrapper = document.createElement("div");
-      wrapper.setAttribute("class", `${theType}InputWrapper`);
-      let headInput;
-      if (theType !== "todo") {
-        headInput = document.createElement("input");
-        headInput.setAttribute("class", "headInput");
-        headInput.value = logHead.textContent;
-      }
+      wrapper.setAttribute("class", `${type}InputWrapper`);
+      let textInput;
+      const headInput = document.createElement("input");
+      headInput.setAttribute("class", `${type}HeadInput`);
+      headInput.value = logHead.textContent;
 
-      const textInput = document.createElement("textarea");
-      textInput.setAttribute("class", `${theType}TextInput`);
-      textInput.value = logPara.textContent;
+      wrapper.append(headInput);
+
+      if (type !== "todo" && type !== "open") {
+        textInput = document.createElement("textarea");
+        textInput.className = `${type}HeadInput`;
+        textInput.value = logPara.textContent;
+        wrapper.append(textInput);
+      }
 
       const logButtons = document.createElement("div");
       logButtons.setAttribute("class", "logButtons");
@@ -448,10 +449,6 @@ function appFunction() {
       closeButton.textContent = "Discard";
       closeButton.setAttribute("class", "closeButton");
 
-      if (theType !== "todo") {
-        wrapper.append(headInput);
-      }
-      wrapper.append(textInput);
       logButtons.append(closeButton);
       logButtons.append(saveButton);
       wrapper.append(logButtons);
@@ -471,22 +468,21 @@ function appFunction() {
           let dbUpdateData = {};
 
           if (editableObject) {
-            if (editableObject.text !== textInput.value) {
-              editableObject.text = textInput.value;
-              logPara.textContent = textInput.value;
-              dbUpdateData.text = textInput.value;
-            }
-
-            if (theType !== "todo") {
-              if (editableObject.heading !== headInput.value) {
-                editableObject.heading = headInput.value;
-                logHead.textContent = headInput.value;
-                dbUpdateData.heading = headInput.value;
+            if (type !== "open" && type !== "todo") {
+              if (editableObject.text !== textInput.value) {
+                editableObject.text = textInput.value;
+                logPara.textContent = textInput.value;
+                dbUpdateData.text = textInput.value;
               }
+            }
+            if (editableObject.heading !== headInput.value) {
+              editableObject.heading = headInput.value;
+              logHead.textContent = headInput.value;
+              dbUpdateData.heading = headInput.value;
             }
           }
 
-          await fetch(`/api/${theType}s/${editableObject._id}`, {
+          await fetch(`/api/veillog/${type}/${editableObject._id}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(dbUpdateData),
@@ -506,244 +502,100 @@ function appFunction() {
     document.body.append(toast);
     setTimeout(() => toast.remove(), 5000);
   }
+  function toggling() {
+    const dropDownButtons = document.querySelectorAll(".dropDownButton");
+    const sideBarIcon = document.querySelectorAll(".sideBarIcon");
+    const sideBarToggler = document.querySelector(".sideBarToggler");
 
-  function toggles() {
-    const menu = document.querySelector(".menu");
-    const sideBar = document.querySelector(".sideBar");
-    const searchbutton = document.querySelector(".searchbutton");
-    const search = document.querySelector(".search");
-    const dropDownToggler = document.querySelectorAll(".dropDownToggler");
+    dropDownButtons.forEach((button) => {
+      button.addEventListener("click", function (e) {
+        e.stopPropagation();
 
-    menu.addEventListener("click", sideBarToggle);
-    searchbutton.addEventListener("click", () => {
-      sideBarToggle();
+        const dropDownMenu =
+          button.parentElement.querySelector(".dropDownMenu");
+        const dropDownText = button.querySelector(".dropDownText");
+        const dropDownIcon = button.querySelector(".dropDownIcon");
+
+        dropDownMenu.classList.toggle("hidden");
+        dropDownText.classList.toggle("opened");
+        dropDownIcon.classList.toggle("rotate");
+      });
+    });
+    document.addEventListener("click", function (e) {
+      const isSideBar = document.querySelector(".sideBar").contains(e.target);
+      if (!isSideBar) {
+        document.querySelector(".sideBar").classList.remove("full");
+        document.querySelectorAll(".dropDownMenu").forEach((menu) => {
+          menu.classList.add("hidden");
+        });
+        document.querySelectorAll(".dropDownText").forEach((icon) => {
+          icon.classList.remove("opened");
+        });
+        document.querySelectorAll(".dropDownIcon").forEach((icon) => {
+          icon.classList.remove("rotate");
+        });
+      }
     });
 
-    search.addEventListener("input", () => {
-      search.value.trim().toLowerCase();
+    sideBarToggler.addEventListener("click", function (e) {
+      e.stopPropagation();
+      document.querySelector(".sideBar").classList.toggle("full");
+    });
+    sideBarIcon.forEach((icon) => {
+      icon.addEventListener("click", function (e) {
+        e.stopPropagation();
+        document.querySelector(".sideBar").classList.toggle("full");
+        const toggle1 =
+          icon.parentElement.parentElement.querySelector(".dropDownMenu");
 
-      let searchedItems = localDataArray.filter((element) => {
-        return (
-          (element.heading || "")
-            .toLowerCase()
-            .includes(search.value.trim().toLowerCase()) ||
-          element.text.toLowerCase().includes(search.value.trim().toLowerCase())
-        );
-      });
+        const toggle2 =
+          icon.parentElement.parentElement.querySelector(".dropDownText");
 
-      const card = document.querySelectorAll(
-        ".noteContainer,.todoContainer,.journalContainer",
-      );
-      const warning = document.querySelector("#warning");
+        const toggle3 =
+          icon.parentElement.parentElement.querySelector(".dropDownIcon");
 
-      card.forEach((element) => {
-        element.remove();
-      });
-
-      if (searchedItems.length === 0) {
-        if (warning) warning.style.display = "flex";
-      } else {
-        if (warning) warning.style.display = "none";
-      }
-
-      searchedItems.forEach((element) => {
-        switch (element.type) {
-          case "note":
-            renderUI(element, false);
-            break;
-          case "journal":
-            renderUI(element, false);
-            break;
-          case "todo":
-            renderUI(element, true);
-            break;
+        if (toggle1 && toggle2 && toggle3) {
+          if (document.querySelector(".sideBar").classList.contains("full")) {
+            toggle1.classList.remove("hidden");
+            toggle2.classList.add("opened");
+            toggle3.classList.add("rotate");
+          } else {
+            toggle1.classList.add("hidden");
+            toggle2.classList.remove("opened");
+            toggle3.classList.remove("rotate");
+          }
         }
       });
     });
-
-    function sideBarToggle() {
-      if (sideBar.classList.contains("hide")) {
-        sideBar.classList.remove("hide");
-        menu.classList.remove("dropDownOpen");
-      } else {
-        dropDownClose();
-        sideBar.classList.add("hide");
-        menu.classList.add("dropDownOpen");
-      }
-    }
-
-    dropDownToggler.forEach((toggle) => {
-      toggle.addEventListener("click", () => {
-        const dropDown = toggle.parentElement.querySelector(".dropDown");
-        const dropDownIcon =
-          toggle.parentElement.querySelector(".dropDownIcon");
-
-        if (dropDown.classList.contains("toggled")) {
-          dropDown.classList.remove("toggled");
-          dropDownIcon.classList.remove("dropDownOpen");
-        } else {
-          sideBar.classList.remove("hide");
-          menu.classList.remove("dropDownOpen");
-          dropDown.classList.add("toggled");
-          dropDownIcon.classList.add("dropDownOpen");
-        }
-      });
-    });
-
-    function dropDownClose() {
-      dropDownToggler.forEach((toggle) => {
-        const dropDown = toggle.parentElement.querySelector(".dropDown");
-        const dropDownIcon =
-          toggle.parentElement.querySelector(".dropDownIcon");
-        dropDown.classList.remove("toggled");
-        dropDownIcon.classList.remove("dropDownOpen");
-      });
-    }
-  }
-
-  function themeChanger() {
-    const theme = document.querySelector("#theme");
-    const addEntryImage = document.querySelector(".addEntryImage");
-    const searchbutton = document.querySelector(".searchbutton");
-    const emptyNoteAdd = document.querySelector(".emptyNoteAdd");
-    const menu = document.querySelector(".menu");
-    const daySelectImage = document.querySelector(".daySelectImage");
-    const typeSelectImage = document.querySelector(".typeSelectImage");
-    const dropDownIcon = document.querySelectorAll(".dropDownIcon");
-
-    const imageIcons = {
-      light: {
-        addNoteIcon: "svgs/addDark.svg",
-        editIcon: "svgs/editDark.svg",
-        emptyNoteIcon: "svgs/emptyDark.svg",
-        themeIcon: "svgs/lightMode.svg",
-        typeIcon: "svgs/typeDark.svg",
-        daySelectionIcon: "svgs/daySelectionDark.svg",
-        deleteIcon: "svgs/deleteDark.svg",
-        dropDownIcon: "svgs/dropDownDark.svg",
-        menuIcon: "svgs/menuDark.svg",
-        sideBarIcon: "svgs/sideBarDark.svg",
-        searchIcon: "svgs/searchDark.svg",
-      },
-
-      dark: {
-        addNoteIcon: "svgs/addLight.svg",
-        editIcon: "svgs/editLight.svg",
-        emptyNoteIcon: "svgs/emptyLight.svg",
-        themeIcon: "svgs/darkMode.svg",
-        typeIcon: "svgs/typeLight.svg",
-        daySelectionIcon: "svgs/daySelectionLight.svg",
-        deleteIcon: "svgs/deleteLight.svg",
-        dropDownIcon: "svgs/dropDownLight.svg",
-        menuIcon: "svgs/menuLight.svg",
-        sideBarIcon: "svgs/sideBarLight.svg",
-        searchIcon: "svgs/searchLight.svg",
-      },
-    };
-
-    const themeInfo = localStorage.getItem("userTheme") || "dark";
-    document.body.classList.remove("dark", "light");
-    document.body.classList.add(themeInfo);
-
-    setIcons(themeInfo);
-
-    theme.addEventListener("click", () => {
-      const darkThemed = document.body.classList.contains("dark");
-
-      if (!darkThemed) {
-        document.body.classList.replace("light", "dark");
-        setIcons("dark");
-        localStorage.setItem("userTheme", "dark");
-      } else {
-        document.body.classList.replace("dark", "light");
-        setIcons("light");
-        localStorage.setItem("userTheme", "light");
-      }
-    });
-
-    function setIcons(themeKey) {
-      addEntryImage.src = imageIcons[themeKey].addNoteIcon;
-      searchbutton.src = imageIcons[themeKey].searchIcon;
-      emptyNoteAdd.src = imageIcons[themeKey].emptyNoteIcon;
-      menu.src = imageIcons[themeKey].menuIcon;
-      daySelectImage.src = imageIcons[themeKey].daySelectionIcon;
-      typeSelectImage.src = imageIcons[themeKey].typeIcon;
-      theme.src = imageIcons[themeKey].themeIcon;
-      dropDownIcon.forEach((icon) => {
-        icon.src = imageIcons[themeKey].dropDownIcon;
-      });
-
-      document
-        .querySelectorAll(".noteEditImage,.journalEditImage,.todoEditImage")
-        .forEach((icon) => {
-          icon.src = imageIcons[themeKey].editIcon;
-        });
-      document
-        .querySelectorAll(
-          ".noteDeleteImage,.journalDeleteImage,.todoDeleteImage",
-        )
-        .forEach((icon) => {
-          icon.src = imageIcons[themeKey].deleteIcon;
-        });
-    }
   }
 
   function typeSelectionFunction() {
-    const typeSelector = document
-      .querySelectorAll(".typeSelection")
-      .forEach((button) => {
-        button.addEventListener("click", () => {
-          const type = button.textContent.trim().toLowerCase();
-          typeFunctionHandler(type);
-        });
-      });
-
-    function typeFunctionHandler(type) {
-      let presentableObject;
-
-      if (type === "all") {
-        presentableObject = localDataArray;
-      } else {
-        presentableObject = localDataArray.filter((el) => {
-          return el.type === type;
-        });
-      }
-
-      const card = document.querySelectorAll(
-        ".noteContainer,.todoContainer,.journalContainer",
-      );
-      const warning = document.querySelector("#warning");
-
-      card.forEach((element) => {
-        element.remove();
-      });
-
-      if (presentableObject.length === 0) {
-        if (warning) warning.style.display = "flex";
-      } else {
-        if (warning) warning.style.display = "none";
-      }
-
-      presentableObject.forEach((element) => {
-        switch (element.type) {
-          case "note":
-            renderUI(element, false);
-            break;
-          case "journal":
-            renderUI(element, false);
-            break;
-          case "todo":
-            renderUI(element, true);
-            break;
+    document.querySelectorAll(".typeSelection").forEach((button) => {
+      button.addEventListener("click", () => {
+        const type = button.textContent.trim().toLowerCase();
+        // console.log(type);
+        let presentableObject;
+        if (type === "all") {
+          presentableObject = localDataArray;
+        } else {
+          presentableObject = localDataArray.filter((el) => {
+            return el.type === type;
+          });
         }
+        clearCards();
+        warningSign(presentableObject);
+
+        presentableObject.forEach((element) => {
+          renderUI(element);
+        });
       });
-    }
+    });
   }
 
   function daySelection() {
-    document.querySelectorAll(".daySelectGrid li").forEach((day) => {
-      day.addEventListener("click", () => {
-        const selectedDay = day.textContent;
+    document.querySelectorAll(".daySelection").forEach((button) => {
+      button.addEventListener("click", () => {
+        const selectedDay = button.textContent.trim().toLowerCase();
 
         const gotDate = new Date();
         const todayYearOld = gotDate
@@ -755,68 +607,148 @@ function appFunction() {
           .toLocaleDateString("en-GB")
           .replace(/\//g, ".");
 
-        let selectedDaydata;
+        let selectedDayArray;
 
         switch (selectedDay) {
-          case "Alltime":
-            selectedDaydata = localDataArray;
+          case "alltime":
+            selectedDayArray = localDataArray;
             break;
 
-          case "Today":
-            selectedDaydata = localDataArray.filter((el) => {
+          case "today":
+            selectedDayArray = localDataArray.filter((el) => {
               return el.date === todayYearOld;
             });
             break;
-          case "Yesterday":
-            selectedDaydata = localDataArray.filter((el) => {
+          case "yesterday":
+            selectedDayArray = localDataArray.filter((el) => {
               return el.date === oneYearOld;
             });
             break;
-          case "Over a week":
-            selectedDaydata = localDataArray.filter((el) => {
-              return el._id < Date.now() - 7 * 86400000;
+          case "over a week":
+            selectedDayArray = localDataArray.filter((el) => {
+              const [d, m, y] = el.date.split(".");
+              const entryDate = new Date(`${y}-${m}-${d}`);
+              return entryDate < new Date(Date.now() - 7 * 86400000);
             });
             break;
-          case "Over a month":
-            selectedDaydata = localDataArray.filter((el) => {
-              return el._id < Date.now() - 30 * 86400000;
+
+          case "over a month":
+            selectedDayArray = localDataArray.filter((el) => {
+              const [d, m, y] = el.date.split(".");
+              const entryDate = new Date(`${y}-${m}-${d}`);
+              return entryDate < new Date(Date.now() - 30 * 86400000);
             });
             break;
 
           default:
-            selectedDaydata = localDataArray;
+            selectedDayArray = localDataArray;
             break;
         }
 
-        const card = document.querySelectorAll(
-          ".noteContainer,.todoContainer,.journalContainer",
-        );
-        const warning = document.querySelector("#warning");
+        clearCards();
+        warningSign(selectedDayArray);
 
-        card.forEach((element) => {
-          element.remove();
-        });
-
-        if (selectedDaydata.length === 0) {
-          if (warning) warning.style.display = "flex";
-        } else {
-          if (warning) warning.style.display = "none";
-        }
-
-        selectedDaydata.forEach((element) => {
-          switch (element.type) {
-            case "note":
-              renderUI(element, false);
-              break;
-            case "journal":
-              renderUI(element, false);
-              break;
-            case "todo":
-              renderUI(element, true);
-              break;
-          }
+        selectedDayArray.forEach((element) => {
+          renderUI(element);
         });
       });
     });
   }
+
+  function searchFeature() {
+    const search = document.querySelector(".search");
+    search.addEventListener("input", () => {
+      const searchedWord = search.value.trim().toLowerCase();
+      let searchedArray;
+      searchedArray = localDataArray.filter((card) => {
+        const head = (card.heading || "").trim().toLowerCase();
+        const text = (card.text || "").trim().toLowerCase();
+        return head.includes(searchedWord) || text.includes(searchedWord);
+      });
+      clearCards();
+      warningSign(searchedArray);
+      searchedArray.forEach((element) => {
+        renderUI(element);
+      });
+    });
+  }
+
+  function createSVG(pathData, size = 16, box = "0 0 24 24") {
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", box);
+    svg.setAttribute("width", size);
+    svg.setAttribute("height", size);
+
+    const path = document.createElementNS(SVG_NS, "path");
+    path.setAttribute("d", pathData);
+    svg.appendChild(path);
+    return svg;
+  }
+
+  function clearCards() {
+    document
+      .querySelectorAll(
+        ".noteContainer,.todoContainer,.journalContainer,.openContainer",
+      )
+      .forEach((card) => {
+        card.remove();
+      });
+  }
+}
+
+function avatarModalSetup() {
+  const avatarWrapper = document.querySelector(".avatarWrapper");
+  const avatarModal = document.querySelector(".avatarModal");
+  const accountName = document.querySelector(".accountName");
+  const sessionInfo = document.querySelector(".sessionInfo");
+  const logMeOut = document.querySelector(".logMeOut");
+
+  avatarModalGetUserInfo();
+
+  avatarWrapper.addEventListener("click", (e) => {
+    e.stopPropagation();
+
+    if (avatarModal.open) {
+      avatarModal.close();
+    } else {
+      const positioning = avatarWrapper.getBoundingClientRect();
+      avatarModal.style.top = `${positioning.bottom + 16}px`;
+      avatarModal.style.left = `${positioning.left - 120}px`;
+      avatarModal.show();
+    }
+  });
+
+  async function avatarModalGetUserInfo() {
+    const accountName = document.querySelector(".accountName");
+    const sessionInfoText = document.querySelector(".sessionInfoText");
+
+    try {
+      const responseDataJson = await fetch("/user");
+
+      if (!responseDataJson.ok) {
+        throw new Error();
+      }
+
+      const responseData = await responseDataJson.json();
+      accountName.textContent = responseData.username;
+      sessionInfoText.textContent = "Logged in";
+      // console.log(` user data : ${responseData}`);
+    } catch (error) {
+      console.log(`couldn't fetch userdata : ${error}`);
+    }
+  }
+
+  logMeOut.addEventListener("click", function () {
+    window.location.href = "/signout";
+  });
+
+  window.addEventListener("click", (e) => {
+    const wrapperNeedToClose = avatarWrapper.contains(e.target);
+    const ModalNeedToClose = avatarModal.contains(e.target);
+
+    if (!wrapperNeedToClose && !ModalNeedToClose) {
+      avatarModal.close();
+    }
+  });
 }
