@@ -41,7 +41,7 @@ function appFunction() {
   noteCreation();
 
   function noteCreation() {
-    const addEntry = document.querySelector("#addEntry");
+    const addEntry = document.querySelector(".addEntry");
     const emptyNoteAdd = document.querySelector("#emptyNoteAdd");
 
     addEntry.addEventListener("click", typeSelection);
