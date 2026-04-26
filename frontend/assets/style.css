@@ -1,7 +1,6 @@
 :root {
   --header-height: 65px;
-  --aside-width: 200px;
-  --aside-full-width: 160px;
+  --aside-full-width: 140px;
   --aside-hidden-width: 42px;
 
   --bg: #080808;
@@ -1010,132 +1009,55 @@ aside ~ .contentPage {
 }
 
 @media (max-width: 1400px) {
-  aside {
-    width: 18vw;
-  }
-
-  .hide {
-    width: 5vw;
+  .noteInputWrapper,
+  .journalInputWrapper,
+  .todoInputWrapper,
+  .openInputWrapper,
+  .typeSelectionContainer {
+    width: 40%;
   }
 }
 
 @media (max-width: 1020px) {
-  aside {
-    width: 24vw;
-  }
-
-  .hide {
-    width: 6vw;
-  }
-
-  .noteInputWrapper {
-    width: 48%;
-  }
-
-  .journalInputWrapper {
-    width: 48%;
-  }
-
-  .todoInputWrapper {
-    width: 48%;
-  }
-
+  .noteInputWrapper,
+  .journalInputWrapper,
+  .todoInputWrapper,
+  .openInputWrapper,
   .typeSelectionContainer {
-    width: 48%;
+    width: 50%;
   }
 
   .contentPage {
     columns: 2;
-    column-gap: 1.5rem;
-    padding: 1.5rem;
   }
 }
 
 @media (max-width: 780px) {
-  aside {
-    width: 28vw;
-  }
-
-  .hide {
-    width: 8vw;
-  }
-
   .contentPage {
     columns: 1;
   }
 
-  .noteInputWrapper {
-    width: 60%;
-  }
-
-  .journalInputWrapper {
-    width: 60%;
-  }
-
-  .todoInputWrapper {
-    width: 60%;
-  }
-
+  .noteInputWrapper,
+  .journalInputWrapper,
+  .todoInputWrapper,
+  .openInputWrapper,
   .typeSelectionContainer {
     width: 60%;
   }
 }
 
 @media (max-width: 600px) {
-  aside {
-    width: 42vw;
-  }
-
-  .hide {
-    width: 12vw;
-  }
-
-  .noteInputWrapper {
-    width: 80%;
-  }
-
-  .journalInputWrapper {
-    width: 80%;
-  }
-
-  .todoInputWrapper {
-    width: 80%;
-  }
-
+  .noteInputWrapper,
+  .journalInputWrapper,
+  .todoInputWrapper,
+  .openInputWrapper,
   .typeSelectionContainer {
     width: 80%;
-  }
-
-  .typeSelectionWrapper > div {
-    font-size: 0.85rem;
   }
 }
 
 @media (max-width: 480px) {
-  aside {
-    width: 50vw;
-  }
-
-  .hide {
-    width: 14vw;
-  }
-
-  .typeSelectionHead {
-    font-size: 1rem;
-  }
-
   .typeSelectionWrapper {
     flex-direction: column;
-  }
-
-  .typeSelectionWrapper > div {
-    width: 100%;
-    text-align: center;
-    font-size: 0.75rem;
-    padding: 0.25rem 0;
-  }
-
-  .typeSelectionContainer {
-    width: 90%;
   }
 }
